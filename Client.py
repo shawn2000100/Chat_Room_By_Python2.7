@@ -44,17 +44,38 @@ def Send_To_Server(sock):
 
 def Recv_From_Server(sock):
     try:
-        print sock.recv(BUFF_SIZE) # 進入聊天室
+       # print sock.recv(BUFF_SIZE) # 進入聊天室
         while 1:
             recv_msg = sock.recv(BUFF_SIZE)
             print recv_msg
 
-            if(recv_msg == '你的連線已被伺服器中斷'):
+            if (recv_msg == '你的連線已被伺服器中斷'):
                 connected = False
                 break
 
-            logging.info(recv_msg)
-            stdout.flush()
+            elif ('START OF FILE:' in recv_msg):
+                token = recv_msg.split()
+                file_name = token[-1]
+                #print file_name
+
+                recv_file = open('/Users/JayChen/Downloads/' + file_name, 'wb')
+                print '新空白檔案開啟成功'
+                fr = sock.recv(BUFF_SIZE)
+
+                print '我收到什麼！？------------'
+                print fr
+                print '----我收到什麼！？--------'
+
+                while(fr != 'END OF FILE'):
+                    recv_file.write(fr)
+                    fr = sock.recv(BUFF_SIZE)
+                recv_file.close()
+
+                print ('接收檔案成功!')
+
+            else:
+                logging.info(recv_msg)
+                stdout.flush()
 
     except socket.error:
         print('客戶端接收時發生未知錯誤!')
