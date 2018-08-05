@@ -48,27 +48,52 @@ def Private_Message(from_usr, dest_usr, message):
 
 def Send_File(conn, from_user, file_path, dest_user):
 
-    # e.g., [Jay]傳來了一個檔案 客戶端路徑:/Users/JayChen.txt
-    msg = '[' + from_user + ']' + '傳來了一個檔案，客戶端路徑:' + file_path
-    logging.info(msg)
-    print msg
-
-    token = file_path.split('/')
-    file_name = token[-1]
-    print 'test ' + file_name
-    new_file = open(file_name, 'wb')
-
     try:
+        # e.g., [Jay]傳來了一個檔案 客戶端路徑:/Users/JayChen.txt
+        msg = '[' + from_user + ']' + '傳來了一個檔案，客戶端路徑:' + file_path
+        logging.info(msg)
+        print msg
+
+        # 伺服器端開啟一個新檔案
+        token = file_path.split('/')
+        file_name = token[-1]
+        new_file = open(file_name, 'wb')
+
+        # 首先接收客戶端所上傳來的檔案
         f = conn.recv(BUFF_SIZE)
         while(f != 'END OF FILE'):
             new_file.write(f)
             f = conn.recv(BUFF_SIZE)
         new_file.close()
 
-        conn.sendall('伺服器端接收成功!')
-        tmpLog = '伺服器接收成功! 檔名[' + file_name + ']'
+        conn.sendall('伺服器接收成功! 檔名[' + file_name + ']\n')
+        tmpLog = '伺服器接收成功! 檔名[' + file_name + ']\n'
         logging.info(tmpLog)
         print tmpLog
+
+
+        # 接著將剛剛所接收的檔案轉傳給另一位使用者
+        for client in list_of_clients:
+            if (client[1] == dest_user):
+                client[0].send('[%s]傳給你一份檔案，客戶端路徑:%s' % (from_user, file_path) + '\n' )
+                client[0].send('START OF FILE: ' + file_name + '\n')
+
+                file = open(file_name, 'rb')
+                print '伺服器獨檔案中'
+                fr = file.read(BUFF_SIZE)
+                while(fr):
+                    print '送了什麼呢？========='
+                    print fr
+                    print '----------送了什麼呢？'
+
+                    client[0].sendall(fr)
+                    fr = file.read(BUFF_SIZE)
+                file.close()
+
+                client[0].sendall('END OF FILE')
+                tmpLog = '伺服器端傳送完畢! 檔名[' + file_name + ']\n'
+                logging.info(tmpLog)
+                print tmpLog
 
     except socket.error:
         error_msg = '未知錯誤發生於 [' + from_usr + ']傳檔時'
