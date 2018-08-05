@@ -46,15 +46,17 @@ def Private_Message(from_usr, dest_usr, message):
                 print(error_msg)
                 Log_Out(client)
 
-def Send_File(conn, from_user, file_path):
+def Send_File(conn, from_user, file_path, dest_user):
 
     # e.g., [Jay]傳來了一個檔案 客戶端路徑:/Users/JayChen.txt
     msg = '[' + from_user + ']' + '傳來了一個檔案，客戶端路徑:' + file_path
     logging.info(msg)
     print msg
 
-    new_file_name = 'file_' + str(int(time.time()))
-    new_file = open(new_file_name, 'wb')
+    token = file_path.split('/')
+    file_name = token[-1]
+    print 'test ' + file_name
+    new_file = open(file_name, 'wb')
 
     try:
         f = conn.recv(BUFF_SIZE)
@@ -64,7 +66,7 @@ def Send_File(conn, from_user, file_path):
         new_file.close()
 
         conn.sendall('伺服器端接收成功!')
-        tmpLog = '伺服器接收成功! 檔名[' + new_file_name + ']'
+        tmpLog = '伺服器接收成功! 檔名[' + file_name + ']'
         logging.info(tmpLog)
         print tmpLog
 
@@ -87,7 +89,7 @@ def Handle_Client(conn, addr):
     list_of_clients.append((conn, user_name))
 
     # 傳送菜單給新user
-    conn.sendall('你好，%s 歡迎進入聊天室\n<廣播>:1 msg <私訊>:2 dst_usr msg <傳檔案>:3 file_path <誰在線上>:4 <登出>:5 \n' % user_name)
+    conn.sendall('你好，%s 歡迎進入聊天室\n<廣播>:1 msg <私訊>:2 dst_usr msg <傳檔案>:3 file_path dst_usr <誰在線上>:4 <登出>:5 \n' % user_name)
 
     try:
         while 1:
@@ -106,7 +108,8 @@ def Handle_Client(conn, addr):
             elif ('3' == command[0]):
                 msg = command.split()
                 file_path = msg[1]
-                Send_File(conn, user_name, file_path)
+                dest_user = msg[2]
+                Send_File(conn, user_name, file_path, dest_user)
 
             elif ('4' == command[0]):
                 conn.send('\n-----誰在線上-----\n')
