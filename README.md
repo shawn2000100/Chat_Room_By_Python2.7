@@ -8,3 +8,17 @@
 開新命令列視窗輸入  python Client.py -a 127.0.0.1 -p 5566 -u user_name
 
 即可運行
+
+### 指令範例
+
+開啟第一個命令列視窗
+
+cd /Users/JayChen/Desktop/python2_socket
+
+python Server.py -p 8888
+
+開啟另一命令列視窗
+
+cd /Users/JayChen/Desktop/python2_socket
+
+python Client.py -a 127.0.0.1 -p 8888 -u Jay
