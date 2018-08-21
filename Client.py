@@ -36,7 +36,6 @@ def Send_To_Server(sock):
 
                 # 傳送結束，關閉檔案
                 file.close()
-
                 print '客戶端檔案傳輸成功! 請輸入 \'END OF FILE\' 來結束傳輸'
 
             # Client要傳送其他指令 (e.g., 廣播、私訊、查登入人數)
@@ -53,57 +52,47 @@ def Send_To_Server(sock):
 
 def Recv_From_Server(sock):
     try:
-        # print sock.recv(BUFF_SIZE) # 進入聊天室
-        transfer_mode = False
         while 1:
-            # 每一次都先印出收到的訊息
+            # 每一次都先印出從Server收到的訊息
             recv_msg = sock.recv(BUFF_SIZE)
             print recv_msg
+            # print '收到...\n' + recv_msg # 這行Debug很好用! 當初靠這行找到 "糊" 在一起的文字
 
-            # 被踢了？
+            # 出於不明原因，這行滿重要的! 沒有這行的話傳大一點的PDF檔案會出現不明錯誤 (Download端檔案打不開)
+            stdout.flush()
+
+
+            # 被Server踢了
             if ('你的連線已被伺服器中斷' in recv_msg):
                 connected = False
                 break
 
             # 準備開始接收伺服器的檔案傳輸
-            elif ('START OF FILE:' in recv_msg or transfer_mode):
-
-                # 準備開始收檔案，標記為傳輸模式
-                transfer_mode = True
-
+            elif ('START OF FILE:' in recv_msg):
                 # 首先拆解訊息，找出要接收的檔案名稱
                 token = recv_msg.split()
-                file_name = token[-1]
+                transfer_mode_file_name = token[-1]
 
                 # 在自己的Download目錄下建立一個新的Binary檔案
-                recv_file = open('/Users/JayChen/Downloads/' + file_name, 'wb')
-                print '新空白檔案開啟成功! 路徑:/Users/JayChen/Downloads/'
+                recv_file = open('/Users/JayChen/Downloads/' + transfer_mode_file_name, 'wb')
+                print '新空白檔案開啟成功! 路徑:/Users/JayChen/Downloads/' + transfer_mode_file_name
 
-                # 開始自Server接收檔案，待會準備寫入檔案
-                fr = sock.recv(BUFF_SIZE)
-                print '我收到什麼！？---------------'
-                print fr
-                print '------收到什麼！？-----------'
+                file_data = sock.recv(BUFF_SIZE)
+                while('END OF FILE' not in file_data):
+                    print ('這邊收到----------')
+                    print file_data
+                    print ('這邊收到++++++++++')
+                    recv_file.write(file_data)
+                    file_data = sock.recv(BUFF_SIZE)
 
-                # 伺服器檔案傳輸還沒接束
-                while('END OF FILE' not in fr):
-                    recv_file.write(fr)
-                    fr = sock.recv(BUFF_SIZE)
-                    print '我收到什麼！？---------------'
-                    print fr
-                    print '------收到什麼！？-----------'
-
-                # 接收並寫入檔案完成! 關閉檔案
-                transfer_mode = False
+                # 接收完畢 關閉檔案
                 recv_file.close()
-                print ('客戶端接收檔案[%s]成功!' % file_name)
-                logging.info('客戶端接收檔案[%s]成功!' % file_name)
+                print ('客戶端接收檔案[%s]成功!' % transfer_mode_file_name)
+                logging.info('客戶端接收檔案[%s]成功!' % transfer_mode_file_name)
 
-            # 正常接收聊天訊息
+            # 其他狀況，正常接收聊天訊息，直接將訊息存入Client_History
             else:
-                # 直接將訊息存入Client_History
                 logging.info(recv_msg)
-                stdout.flush()
 
     except socket.error:
         print('客戶端接收時發生未知錯誤!')
