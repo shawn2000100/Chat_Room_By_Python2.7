@@ -96,26 +96,30 @@ def Send_File(conn, from_user, file_path, dest_user):
         for client in list_of_clients:
             # 首先鎖定該位user
             if (client[1] == dest_user):
-                client[0].send('[%s]傳給你一份檔案，客戶端路徑:%s' % (from_user, file_path) + '\n' )
-                client[0].send('START OF FILE: ' + file_name + '\n')
+                #
+                client[0].sendall('[%s]傳給你一份檔案，客戶端路徑:%s' % (from_user, file_path) + '\n' )
+                client[0].sendall('START OF FILE: ' + file_name + '\n')
+
+                # 睡覺超重要!!!!! 沒加這行程式傳送的訊息會 "黏" 在一起 !!!!
+                time.sleep(0.5)
 
                 # Server端打開剛剛接收完成的檔案 (e.g., JayChen.txt)
                 file = open(file_name, 'rb')
-
-                print '伺服器讀取檔案中'
                 fr = file.read(BUFF_SIZE)
                 while(fr):
-                    print '送了什麼呢？=========='
+                    print ('這邊傳了----------')
                     print fr
-                    print '----------送了什麼呢？'
-
+                    print ('這邊傳了++++++++++')
                     client[0].sendall(fr)
                     fr = file.read(BUFF_SIZE)
 
                 # 傳送完畢，關閉檔案
                 file.close()
-                print ('伺服器關閉傳給目的使用者的檔案囉!')
 
+                # 睡覺很重要!!! 防止END OF FILE與之前的讀檔資料 fr "糊" 在一起!!!
+                time.sleep(0.5)
+
+                # 告知接收端，檔案傳輸結束，他才知道要關閉那邊的檔案
                 client[0].sendall('END OF FILE')
                 tmpLog = '伺服器端傳送完畢! 檔名[' + file_name + ']\n'
                 logging.info(tmpLog)
@@ -203,7 +207,7 @@ def Handle_Client(conn, addr):
 def main(p, port):
     HOST = '127.0.0.1'
     PORT = int(port)
-    BACKLOG = 10 # 最多人接受的pending連線數 (不包含已連上的)
+    BACKLOG = 10 # 最多接受的pending連線數 (不包含已連上的)
 
     # 首先宣告一個TCP Socket
     # 接著binding伺服器IP及PORT
