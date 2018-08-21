@@ -79,9 +79,10 @@ def Recv_From_Server(sock):
 
                 file_data = sock.recv(BUFF_SIZE)
                 while('END OF FILE' not in file_data):
-                    print ('這邊收到----------')
-                    print file_data
-                    print ('這邊收到++++++++++')
+                    # Debug跟測試用
+                    # print ('這邊收到----------')
+                    # print file_data
+                    # print ('這邊收到++++++++++')
                     recv_file.write(file_data)
                     file_data = sock.recv(BUFF_SIZE)
 
