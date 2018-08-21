@@ -24,3 +24,5 @@ cd /Users/JayChen/Desktop/python2_socket
 python Client.py -a 127.0.0.1 -p 8888 -u Jay
 
 3 /Users/JayChen/Desktop/test.rtf Jay
+
+3 /Users/JayChen/Desktop/預排系統.pdf Jay
