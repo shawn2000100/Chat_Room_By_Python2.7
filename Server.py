@@ -96,7 +96,7 @@ def Send_File(conn, from_user, file_path, dest_user):
         for client in list_of_clients:
             # 首先鎖定該位user
             if (client[1] == dest_user):
-                #
+                # 猜測可能是因為傳送時間太近了，下面兩行在Client端收到時會 "黏" 在一起 (i.e. 被當作同時傳送的)
                 client[0].sendall('[%s]傳給你一份檔案，客戶端路徑:%s' % (from_user, file_path) + '\n' )
                 client[0].sendall('START OF FILE: ' + file_name + '\n')
 
@@ -107,9 +107,10 @@ def Send_File(conn, from_user, file_path, dest_user):
                 file = open(file_name, 'rb')
                 fr = file.read(BUFF_SIZE)
                 while(fr):
-                    print ('這邊傳了----------')
-                    print fr
-                    print ('這邊傳了++++++++++')
+                    # Debug以及測試用
+                    # print ('這邊傳了----------')
+                    # print fr
+                    # print ('這邊傳了++++++++++')
                     client[0].sendall(fr)
                     fr = file.read(BUFF_SIZE)
 
